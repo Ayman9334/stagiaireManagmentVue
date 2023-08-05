@@ -1,12 +1,12 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL
+  baseURL: "http://localhost:8080/"
 });
 
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("ACCESS_TOKEN");
-  config.headers.Authorization = `Bearer ${token}`;
+  config.headers.Authorization = `${token}`;
   return config;
 });
 
@@ -20,7 +20,7 @@ axiosClient.interceptors.response.use(
       localStorage.removeItem("ACCESS_TOKEN");
       window.location.href = "/";
     } else if (response.status === 404) {
-      window.location.href = "/nous-sommes-desoles";
+      window.location.href = "/dwada";
     }
     throw error;
   }

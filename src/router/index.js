@@ -19,12 +19,23 @@ const router = createRouter({
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: AboutViewVue
     }
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  const publicPage = '/inscription';
+  const path = to.path;
+  const auth = localStorage.getItem('ACCESS_TOKEN');
+
+  if (path != publicPage && !auth) {
+    next('/inscription');
+  } else if (path == publicPage && auth){
+    next('/');
+  } else {
+    next();
+  }
 })
 
 export default router
