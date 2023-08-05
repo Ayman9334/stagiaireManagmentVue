@@ -6,7 +6,9 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("ACCESS_TOKEN");
-  config.headers.Authorization = `${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
@@ -20,7 +22,7 @@ axiosClient.interceptors.response.use(
       localStorage.removeItem("ACCESS_TOKEN");
       window.location.href = "/";
     } else if (response.status === 404) {
-      window.location.href = "/dwada";
+      window.location.href = "/page-non-trouvee";
     }
     throw error;
   }
