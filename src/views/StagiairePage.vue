@@ -1,6 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useConfirm } from "primevue/useconfirm";
 import axiosClient from '../config/axiosConfig'
+
+const confirm = useConfirm();
 
 const stagiaires = ref([])
 const profInf = ref([]);
@@ -31,6 +34,12 @@ onMounted(() => {
 })
 
 const profList = (profs) => profs.map((prof) => prof.nom).join(',')
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const formattedDate = date.toLocaleDateString('fr-FR');
+  return formattedDate;
+}
 
 const errorRestar = () => {
   const elementsWithInvalidClass = document.querySelectorAll('.is-invalid');
@@ -72,14 +81,14 @@ const genererReq = () => ({ //generate reuest
 const creeStgiaire = () => {
   errorRestar()
   const req = genererReq()
-  console.log(req)
+
   axiosClient.post('/stagiaire', req)
     .then(() => {
       axiosClient.get('/stagiaire').then(({ data }) => { stagiaires.value = data });
       const button = document.getElementById('close-creation-modal');
       button.click();
     }).catch(({ response }) => {
-      if (response.status) {
+      if (response && response.status == 400) {
         errors.value = response.data
         if (typeof errors.value == "string") {
           errors.value = { 'message': errors.value }
@@ -123,10 +132,19 @@ const modifierStgiaire = () => {
 }
 
 const suprimerStgiaire = (id) => {
-  axiosClient.delete(`/stagiaire/${id}`)
-    .then(() => {
-      axiosClient.get('/stagiaire').then(({ data }) => { stagiaires.value = data });
-    })
+  confirm.require({
+    target: event.currentTarget,
+    message: 'Voulez-vous supprimer cet enregistrement?',
+    icon: 'far fa-info-circle',
+    acceptClass: 'p-button-danger',
+    accept: () => {
+      axiosClient.delete(`/stagiaire/${id}`)
+        .then(() => {
+          axiosClient.get('/stagiaire').then(({ data }) => { stagiaires.value = data });
+        })
+    }
+  });
+
 }
 
 const desctiverStgiaire = (id) => {
@@ -156,7 +174,7 @@ const desctiverStgiaire = (id) => {
             <form class="row">
               <div>
                 <label for="nom">Nom : <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="nom" required v-model="nom">
+                <input type="text" class="form-control" id="nom" v-model="nom">
               </div>
               <div>
                 <label for="prenom">Prénom :</label>
@@ -176,17 +194,17 @@ const desctiverStgiaire = (id) => {
                   class="form-control w-full md:w-20rem" />
               </div>
               <div>
-                <label for="etablissement">Etablissement :</label>
+                <label for="etablissement">Etablissement : <span class="text-danger">*</span></label>
                 <Dropdown v-model="etablissementSelectionne" showClear :options="etablissements" optionLabel="libelle"
                   optionValue="id" class="form-control w-full md:w-14rem" />
               </div>
               <div>
-                <label for="login">Login :</label>
-                <input type="text" class="form-control" id="login" v-model="login" required>
+                <label for="login">Login : <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="login" v-model="login">
               </div>
               <div>
-                <label for="mot_de_passe">Mot de passe :</label>
-                <input type="password" class="form-control" id="mot_de_passe" v-model="mot_de_passe" required>
+                <label for="mot_de_passe">Mot de passe : <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="mot_de_passe" v-model="mot_de_passe">
               </div>
             </form>
           </div>
@@ -233,12 +251,13 @@ const desctiverStgiaire = (id) => {
             <td>{{ stagiaire.numero }}</td>
             <td>{{ stagiaire.nom }}</td>
             <td>{{ stagiaire.prenom }}</td>
-            <td>{{ stagiaire.date_de_naissance }}</td>
+            <td>{{ formatDate(stagiaire.date_de_naissance) }}</td>
             <td>{{ stagiaire.age }}</td>
             <td>{{ stagiaire.adresse }}</td>
             <td>{{ profList(stagiaire.liste_des_professeursInfo) }}</td>
             <td>{{ stagiaire.etablissementInfo.libelle }}</td>
             <td>
+              <ConfirmPopup></ConfirmPopup>
               <button class="btn btn-danger me-1" @click="suprimerStgiaire(stagiaire.id)">
                 <i class="far fa-trash"></i>
               </button>

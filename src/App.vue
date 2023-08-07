@@ -24,8 +24,10 @@ const deconnecter = () => {
 
         <div class="nav d-flex gap-3 h-100 ms-4">
           <RouterLink to="/">Home</RouterLink>
-          <RouterLink to="/about">About</RouterLink>
           <RouterLink to="/stagiaire">Stagiaire</RouterLink>
+          <RouterLink to="/professeur">Professeur</RouterLink>
+          <RouterLink to="/etablissement">Établissement</RouterLink>
+          <RouterLink to="/matiere">Matière</RouterLink>
         </div>
       </div>
       <div>
